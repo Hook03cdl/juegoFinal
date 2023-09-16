@@ -26,6 +26,9 @@ imgPlayerDer.src = 'playerDer.png';
 const moneda = new Image();
 moneda.src = 'moneda.png';
 
+const vida = new Image();
+vida.src = 'vida.png';
+
 const bomberman_start = new Audio();
 bomberman_start.volume = 0.3;
 bomberman_start.src = 'bomberman_start.mp3';
@@ -35,6 +38,9 @@ pop.src = 'pop.mp3';
 
 const soltarBomba = new Audio();
 soltarBomba.src = 'soltarBomba.mp3';
+
+const ohoh = new Audio();
+ohoh.src = 'ohoh.mp3';
 
 const coin = new Audio();
 coin.src = 'marioCoin.mp3';
@@ -53,6 +59,7 @@ class Player {
 		w = saltos,
 		destruible = false,
 		color = null,
+		vida,
 	}) {
 		this.posicion = posicion;
 		this.h = h;
@@ -60,6 +67,7 @@ class Player {
 		this.destruible = destruible;
 		this.color = color;
 		this.bombasUsables = 3;
+		this.vida = 3;
 	}
 	esDestruido() {
 		return this.destruible && this.color === 'red';
@@ -109,6 +117,12 @@ class Bomba {
 
 	explocion() {
 		mapa[this.posArray.a_y][this.posArray.a_x] = 0;
+		let trampa = {
+			block1: parseInt(Math.random() * 6),
+			block2: parseInt(Math.random() * 6),
+			block3: parseInt(Math.random() * 6),
+			block4: parseInt(Math.random() * 6),
+		};
 		for (let x = 0; x <= this.rango; x++) {
 			if (
 				this.posArray.a_x + x < mapa[this.posArray.a_y].length &&
@@ -117,10 +131,16 @@ class Bomba {
 				if (mapa[this.posArray.a_y][this.posArray.a_x + 1] === 1) {
 					break;
 				} else if (mapa[this.posArray.a_y][this.posArray.a_x + x] === 2) {
-					mapa[this.posArray.a_y][this.posArray.a_x + x] = 0;
+					if (trampa.block1 === 1) {
+						mapa[this.posArray.a_y][this.posArray.a_x + x] = 5;
+					} else {
+						mapa[this.posArray.a_y][this.posArray.a_x + x] = 0;
+					}
 
 					break;
 				}
+			} else if (mapa[this.posArray.a_y][this.posArray.a_x + x] === 5) {
+				mapa[this.posArray.a_y][this.posArray.a_x + x] = 0;
 			} else if (
 				this.posArray.a_x + x < mapa[this.posArray.a_y].length &&
 				mapa[this.posArray.a_y][this.posArray.a_x + x] === 0
@@ -142,9 +162,16 @@ class Bomba {
 				if (mapa[this.posArray.a_y][this.posArray.a_x - 1] === 1) {
 					break;
 				} else if (mapa[this.posArray.a_y][this.posArray.a_x - x] === 2) {
-					mapa[this.posArray.a_y][this.posArray.a_x - x] = 0;
+					if (trampa.block2 === 1) {
+						mapa[this.posArray.a_y][this.posArray.a_x - x] = 5;
+					} else {
+						mapa[this.posArray.a_y][this.posArray.a_x - x] = 0;
+					}
 					break;
 				}
+			}
+			if (mapa[this.posArray.a_y][this.posArray.a_x - x] === 5) {
+				mapa[this.posArray.a_y][this.posArray.a_x - x] = 0;
 			} else if (
 				this.posArray.a_x - x >= 1 &&
 				mapa[this.posArray.a_y][this.posArray.a_x - x] === 0
@@ -167,9 +194,15 @@ class Bomba {
 				if (mapa[this.posArray.a_y + 1][this.posArray.a_x] === 1) {
 					break;
 				} else if (mapa[this.posArray.a_y + y][this.posArray.a_x] === 2) {
-					mapa[this.posArray.a_y + y][this.posArray.a_x] = 0;
+					if (trampa.block3 === 1) {
+						mapa[this.posArray.a_y + 1][this.posArray.a_x] = 5;
+					} else {
+						mapa[this.posArray.a_y + 1][this.posArray.a_x] = 0;
+					}
 					break;
 				}
+			} else if (mapa[this.posArray.a_y + 1][this.posArray.a_x] === 5) {
+				mapa[this.posArray.a_y + 1][this.posArray.a_x] = 0;
 			} else if (
 				this.posArray.a_y + y < mapa.length &&
 				mapa[this.posArray.a_y + y][this.posArray.a_x] === 0
@@ -191,9 +224,15 @@ class Bomba {
 				if (mapa[this.posArray.a_y - 1][this.posArray.a_x] === 1) {
 					break;
 				} else if (mapa[this.posArray.a_y - y][this.posArray.a_x] === 2) {
-					mapa[this.posArray.a_y - y][this.posArray.a_x] = 0;
+					if (trampa.block4 === 1) {
+						mapa[this.posArray.a_y - 1][this.posArray.a_x] = 5;
+					} else {
+						mapa[this.posArray.a_y - 1][this.posArray.a_x] = 0;
+					}
 					break;
 				}
+			} else if (mapa[this.posArray.a_y - 1][this.posArray.a_x] === 5) {
+				mapa[this.posArray.a_y - 1][this.posArray.a_x] = 0;
 			} else if (
 				this.posArray.a_y > 1 &&
 				mapa[this.posArray.a_y - y][this.posArray.a_x] === 0
@@ -252,82 +291,129 @@ let y = 1;
 let x = 1;
 let key = false;
 document.addEventListener('keydown', (e) => {
-	switch (e.keyCode) {
-		case 87: //arriba
-			if (mapa[y - 1][x] === 0 || mapa[y - 1][x] === 4) {
-				if (mapa[y - 1][x] === 4) {
-					mapa[y - 1][x] = 0;
-					monedasRecogidas++;
-					coin.play();
+	if (player.vida > 0) {
+		switch (e.keyCode) {
+			case 87: //arriba
+				if (
+					mapa[y - 1][x] === 0 ||
+					mapa[y - 1][x] === 4 ||
+					mapa[y - 1][x] === 5
+				) {
+					y--;
+					player.posicion.y -= saltos;
+					if (mapa[y - 1][x] === 4) {
+						mapa[y - 1][x] = 0;
+						monedasRecogidas++;
+						coin.play();
+					} else if (mapa[y][x] === 5) {
+						player.vida--;
+						player.posicion.x = saltos;
+						player.posicion.y = saltos;
+						x = 1;
+						y = 1;
+						ohoh.play();
+					}
 				}
-				y--;
-				player.posicion.y -= saltos;
-			}
 
-			break;
-		case 83: //abajo
-			if (mapa[y + 1][x] === 0 || mapa[y + 1][x] === 4) {
-				if (mapa[y + 1][x] === 4) {
-					mapa[y + 1][x] = 0;
-					monedasRecogidas++;
-					coin.play();
+				break;
+			case 83: //abajo
+				if (
+					mapa[y + 1][x] === 0 ||
+					mapa[y + 1][x] === 4 ||
+					mapa[y + 1][x] === 5
+				) {
+					y++;
+					player.posicion.y += saltos;
+					if (mapa[y + 1][x] === 4) {
+						mapa[y + 1][x] = 0;
+						monedasRecogidas++;
+						coin.play();
+					} else if (mapa[y][x] === 5) {
+						player.vida--;
+						player.posicion.x = saltos;
+						player.posicion.y = saltos;
+						x = 1;
+						y = 1;
+						ohoh.play();
+					}
 				}
-				y++;
-				player.posicion.y += saltos;
-			}
-			break;
-		case 68: //derecha
-			if (mapa[y][x + 1] === 0 || mapa[y][x + 1] === 4) {
-				if (mapa[y][x + 1] === 4) {
-					mapa[y][x + 1] = 0;
-					monedasRecogidas++;
-					coin.play();
+				break;
+			case 68: //derecha
+				if (
+					mapa[y][x + 1] === 0 ||
+					mapa[y][x + 1] === 4 ||
+					mapa[y][x + 1] === 5
+				) {
+					x++;
+					player.posicion.x += saltos;
+					vista = 'derecha';
+					if (mapa[y][x] === 4) {
+						mapa[y][x] = 0;
+						monedasRecogidas++;
+						coin.play();
+					} else if (mapa[y][x] === 5) {
+						player.vida--;
+						player.posicion.x = saltos;
+						player.posicion.y = saltos;
+						x = 1;
+						y = 1;
+						ohoh.play();
+					}
 				}
-				x++;
-				player.posicion.x += saltos;
-				vista = 'derecha';
-			}
-			break;
-		case 65: //izquierda
-			if (mapa[y][x - 1] == 0 || mapa[y][x - 1] === 4) {
-				if (mapa[y][x - 1] === 4) {
-					mapa[y][x - 1] = 0;
-					monedasRecogidas++;
-					coin.play();
+				break;
+			case 65: //izquierda
+				if (
+					mapa[y][x - 1] == 0 ||
+					mapa[y][x - 1] === 4 ||
+					mapa[y][x - 1] === 4
+				) {
+					x--;
+					player.posicion.x -= saltos;
+					vista = 'izquierda';
+					if (mapa[y][x] === 4) {
+						mapa[y][x] = 0;
+						monedasRecogidas++;
+						coin.play();
+					} else if (mapa[y][x] === 5) {
+						player.vida--;
+						player.posicion.x = saltos;
+						player.posicion.y = saltos;
+						x = 1;
+						y = 1;
+						ohoh.play();
+					}
 				}
-				x--;
-				player.posicion.x -= saltos;
-				vista = 'izquierda';
-			}
-			break;
-		case 32:
-			key = true;
-			if (player.bombasUsables > 0) {
-				if (mapa[y][x] === 0) {
-					mapa[y][x] = 3;
-					bombasAct.push(
-						new Bomba({
-							posicion: { x: player.posicion.x, y: player.posicion.y },
-							posArray: { a_x: x, a_y: y },
-						})
-					);
-					player.bombasUsables--;
-					soltarBomba.play();
+				break;
+			case 32:
+				key = true;
+				if (player.bombasUsables > 0) {
+					if (mapa[y][x] === 0) {
+						mapa[y][x] = 3;
+						bombasAct.push(
+							new Bomba({
+								posicion: { x: player.posicion.x, y: player.posicion.y },
+								posArray: { a_x: x, a_y: y },
+							})
+						);
+						player.bombasUsables--;
+						soltarBomba.play();
+					}
 				}
-			}
 
-			break;
+				break;
 
-		case 27: //pausa
-			pausa = !pausa;
-			ctx.fillStyle = 'rgba(0,0,0,.5';
-			ctx.fillRect(0, 0, canvas.width, canvas.height);
-			ctx.fillStyle = '#fff';
-			ctx.font = '80px Arial';
-			ctx.fillText(`Pausa`, canvas.width / 2 - 200, canvas.height / 2);
-			break;
+			case 27: //pausa
+				pausa = !pausa;
+				ctx.fillStyle = 'rgba(0,0,0,.5';
+				ctx.fillRect(0, 0, canvas.width, canvas.height);
+				ctx.fillStyle = '#fff';
+				ctx.font = '80px Arial';
+				ctx.fillText(`Pausa`, canvas.width / 2 - 200, canvas.height / 2);
+				break;
+		}
 	}
 });
+
 bomberman_start.onended = function () {
 	tema.play();
 };
@@ -340,6 +426,14 @@ function actualizar() {
 
 	if (!pausa) {
 		repintar();
+	}
+	if (player.vida <= 0) {
+		ctx.fillStyle = 'rgba(0,0,0,.5';
+		ctx.fillRect(0, 0, canvas.width, canvas.height);
+		ctx.fillStyle = '#fff';
+		ctx.font = '80px Arial';
+		ctx.fillText(`Perdiste`, canvas.width / 2 - 200, canvas.height / 2);
+		pausa = false;
 	}
 }
 
@@ -361,8 +455,8 @@ function datosJuegos() {
 		ctx.fillText(`Time`, canvas.width - 200, 75);
 		ctx.fillText(`${time.min}:${time.seg}`, canvas.width - 200, 100);
 	}
-	ctx.drawImage(moneda, canvas.width - 200, 150, 30, 30);
-	ctx.fillText(`/ ${monedasRecogidas}`, canvas.width - 160, 175);
+	ctx.drawImage(moneda, canvas.width / 2, 10, 30, 30);
+	ctx.fillText(`/ ${monedasRecogidas}`, canvas.width / 2 + 40, 35);
 
 	ctx.fillText(`Controles:`, canvas.width - 180, 250);
 	ctx.font = '20px Arial';
@@ -379,6 +473,10 @@ function datosJuegos() {
 	ctx.fillText(`Pausa:`, canvas.width - 180, 440);
 	ctx.font = '20px Arial';
 	ctx.fillText(`esc`, canvas.width - 180, 480);
+
+	for (let v = 0; v < player.vida; v++) {
+		ctx.drawImage(vida, 30 + v * 40, 10, 30, 30);
+	}
 }
 
 function repintar() {
@@ -397,8 +495,6 @@ function repintar() {
 		}
 	});
 
-	datosJuegos();
-
 	for (let i = 0; i < mapa.length; i++) {
 		for (let j = 0; j < mapa[i].length; j++) {
 			if (mapa[i][j] === 1) {
@@ -407,7 +503,7 @@ function repintar() {
 				if (i > 1 && i < mapa.length - 1 && j > 1 && j < mapa[i].length - 1) {
 					ctx.fillStyle = 'rgba(255,255,255,0.5)';
 					ctx.fillRect(j * saltos, i * saltos, 5, saltos);
-					ctx.fillRect(j * saltos + 5, i * saltos, saltos, 5);
+					ctx.fillRect(j * saltos + 5, i * saltos, saltos - 5, 5);
 
 					ctx.fillStyle = '#333';
 					ctx.fillRect(j * saltos, i * saltos + saltos - 5, saltos, 5);
@@ -439,7 +535,7 @@ function repintar() {
 			} else if (mapa[i][j] === 4) {
 				ctx.drawImage(moneda, j * saltos, i * saltos, saltos, saltos);
 			} else if (mapa[i][j] === 5) {
-				ctx.fillStyle = 'rgba(0,0,0,.7)';
+				ctx.fillStyle = 'rgba(0,0,0,.1)';
 				ctx.fillRect(j * saltos, i * saltos, saltos, saltos);
 			}
 		}
@@ -453,6 +549,7 @@ function repintar() {
 		ctx.fillText(`Victoria`, canvas.width / 2 - 200, canvas.height / 2);
 	}
 	player.draw();
+	datosJuegos();
 }
 
 actualizar();
