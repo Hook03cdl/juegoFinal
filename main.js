@@ -14,6 +14,9 @@ let vista = 'derecha';
 const bombaImg = new Image();
 bombaImg.src = 'bomba.png';
 
+const calabera = new Image();
+calabera.src = 'calabera.png';
+
 const imgExplocion = new Image();
 imgExplocion.src = 'explocion.png';
 
@@ -264,7 +267,7 @@ class Bomba {
 
 const mapa = [
 	[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-	[1, 0, 0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 4, 1],
+	[1, 0, 0, 0, 5, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 4, 1],
 	[1, 0, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1],
 	[1, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1],
 	[1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1],
@@ -301,8 +304,8 @@ document.addEventListener('keydown', (e) => {
 				) {
 					y--;
 					player.posicion.y -= saltos;
-					if (mapa[y - 1][x] === 4) {
-						mapa[y - 1][x] = 0;
+					if (mapa[y][x] === 4) {
+						mapa[y][x] = 0;
 						monedasRecogidas++;
 						coin.play();
 					} else if (mapa[y][x] === 5) {
@@ -324,8 +327,8 @@ document.addEventListener('keydown', (e) => {
 				) {
 					y++;
 					player.posicion.y += saltos;
-					if (mapa[y + 1][x] === 4) {
-						mapa[y + 1][x] = 0;
+					if (mapa[y][x] === 4) {
+						mapa[y][x] = 0;
 						monedasRecogidas++;
 						coin.play();
 					} else if (mapa[y][x] === 5) {
@@ -535,7 +538,10 @@ function repintar() {
 			} else if (mapa[i][j] === 4) {
 				ctx.drawImage(moneda, j * saltos, i * saltos, saltos, saltos);
 			} else if (mapa[i][j] === 5) {
-				ctx.fillStyle = 'rgba(0,0,0,.1)';
+				ctx.globalAlpha = 0.5;
+				ctx.drawImage(calabera, j * saltos, i * saltos, saltos, saltos);
+				ctx.globalAlpha = 1.0;
+				ctx.fillStyle = 'rgba(0,0,0,.2)';
 				ctx.fillRect(j * saltos, i * saltos, saltos, saltos);
 			}
 		}
